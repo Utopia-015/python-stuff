@@ -1,19 +1,20 @@
 import requests
 import json
+import datetime as date
 
 
-# 发出 POST 请求，返回字节行迭代器
+# 发出 POST 请求，返回 Unicode 响应体
 def post_card():
     url = 'http://yun.ujs.edu.cn/xxhgl/yqsb/grmrsb?v=9374'
     response = requests.post(url, headers=headers, data=data)
-    return response.iter_lines()
+    return response.text
 
 
-def check_success(iter_lines):
-    for line in iter_lines:
-        if b'Success' in line:
-            return True
-    return False
+def check_success(text: str):
+    if text.find('Success'):
+        return True
+    else:
+        return False
 
 
 def send_group_msg(group_id: int, msg: str):
@@ -23,8 +24,7 @@ def send_group_msg(group_id: int, msg: str):
         "group_id": group_id,
         "message": msg
     }
-    response = requests.post(url, headers=bot_headers, data=json.dumps(bot_data))
-    return response.json()
+    requests.post(url, headers=bot_headers, data=json.dumps(bot_data))
 
 
 if __name__ == '__main__':
@@ -69,9 +69,10 @@ if __name__ == '__main__':
             'btn': ''
             }
 
-    iter_response = post_card()
-    if check_success(iter_response):
-        print(send_group_msg(int('群号'), '[机器人发送]打卡成功'))
+    text_response = post_card()
+    if check_success(text_response):
+        print(date.datetime.now(), '打卡成功')
+        send_group_msg(int('群号'), '[机器人发送]打卡成功')
     else:
-        print(send_group_msg(int('群号'), '[机器人发送]打卡失败'))
-
+        print(date.datetime.now(), '打卡失败')
+        send_group_msg(int('群号'), '[机器人发送]打卡失败')
